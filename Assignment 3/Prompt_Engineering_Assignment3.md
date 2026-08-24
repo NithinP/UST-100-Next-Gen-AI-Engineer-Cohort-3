@@ -56,11 +56,11 @@ Client brief:
 
 **Why this structure?** The rules are placed *before* the task and the output is locked into a rigid five-part schema so the model can't blend invented facts into what looks like verified data. Separating "extraction" (grounded, low-risk) from "hypothesis generation" (interpretive, higher-risk) into different sections stops speculation from silently leaking into the facts section. Confidence tagging forces the model to self-audit each hypothesis instead of presenting every conclusion with equal, false certainty.
 
-**Why this technique?** Hybrid — zero-shot (case specifics vary too much for worked examples to generalize) combined with explicit staged reasoning: a lightweight form of Chain-of-Thought where the "chain" is enforced through mandatory output sections rather than free-form "let's think step by step" narration. This gives the reliability benefit of CoT (separating observation from inference) without the verbosity and hallucination risk of an open-ended reasoning trace.
+**Why this technique?** Zero-shot prompting combined with an explicit Chain-of-Thought structure. It is zero-shot because no worked examples are given — case specifics vary too much for a single example to generalize safely. It is also Chain-of-Thought because the model is forced to reason in an explicit sequence (extract facts → flag contradictions → generate hypotheses → identify gaps → recommend next steps) rather than jumping straight to a conclusion. Here the "chain" is enforced through mandatory output sections rather than an open-ended "let's think step by step" narration, which keeps CoT's core benefit — separating observation from inference — while limiting verbosity and hallucination risk.
 
 **Failure modes prevented:** hallucinated statistics or root causes presented as fact; silent resolution of contradictory stakeholder claims; false uniform confidence across all conclusions; scope creep into unsolicited advice not grounded in the case.
 
-**Alternative design:** A Tree-of-Thought variant — generate three independent hypothesis "branches" in isolation (without letting the model see the others while drafting each), then compare and prune them for consistency with the stated facts before presenting the final structured answer. This trades higher token cost for broader hypothesis coverage; useful for high-stakes cases where breadth matters more than latency, but overkill for a first-pass triage.
+**Alternative design:** A few-shot version of the same prompt — add one or two worked examples showing a short messy client paragraph and its correctly completed five-section output (including a deliberately unresolved contradiction and a populated "Missing Data" entry). This teaches the desired extraction pattern by demonstration rather than by rule alone, which can make the output format more consistent from the first attempt. The trade-off is generalization: a worked example anchors the model to that example's domain and phrasing, so it can undershoot on a client brief that looks very different (a different industry, a much shorter or more clipped writing style), whereas the zero-shot version above generalizes more safely across unseen cases.
 
 ---
 
@@ -308,7 +308,7 @@ Client context (if any provided):
 
 **Why this structure?** A single yes/no answer to a market-entry question is almost always a false simplification — the real decision is a bundle of smaller decisions (segment, mode, timing) that get flattened if the model jumps straight to a verdict. Decomposition first, then scenario comparison, then an explicit counterargument, mirrors how a real strategy team would structure a board memo, and prevents a confident one-liner with no visible tradeoff analysis.
 
-**Why this technique?** Hybrid — structured Chain-of-Thought (the five numbered steps) combined with a scenario-comparison template that is Tree-of-Thought in spirit, since Step 3 requires constructing and comparing multiple distinct branches rather than following one linear chain. Each scenario's evaluation still follows the same checklist, so it's "CoT-scaffolded ToT."
+**Why this technique?** Chain-of-Thought — the five numbered steps force the model to reason in a fixed sequence (decompose → assumptions → scenario comparison → counterargument → explicit decision criteria) instead of jumping straight to a recommendation. It stays zero-shot within that sequence, since no worked example of a market-entry recommendation is given; the reasoning discipline comes entirely from the explicit steps, not from demonstrated examples.
 
 **Failure modes prevented:** premature, oversimplified yes/no verdicts; assumptions smuggled in as facts; one-sided advocacy with no counterargument (a sycophancy failure mode); implicit, unstated decision criteria that make the recommendation impossible to challenge later.
 
@@ -671,7 +671,7 @@ Source: <source>{DOCUMENT}</source>
 
 **Purpose:** turn extracted structured data into hypotheses, analysis, or recommendations.
 
-**Design rule:** this is where Chain-of-Thought / Tree-of-Thought should be **enforced**, not suppressed, because the task now genuinely requires multi-step inference (as in Q1, Q5, Q6).
+**Design rule:** this is where Chain-of-Thought should be **enforced**, not suppressed, because the task now genuinely requires multi-step inference (as in Q1, Q5, Q6) — the model must reason through the extracted facts in an explicit sequence rather than jump straight to a conclusion.
 
 **Few-shot vs zero-shot rule of thumb:** use **few-shot** when the task recurs frequently with stable structure (classification, tagging, recurring report formats — as in Q7). Use **zero-shot with an explicit reasoning scaffold** (decompose → assumptions → scenarios → counterargument) when the task is novel, high-stakes, or ambiguous (diagnosis, strategy, fraud analysis — Q1, Q2, Q5, Q6), since there's no representative "example" to safely show.
 
