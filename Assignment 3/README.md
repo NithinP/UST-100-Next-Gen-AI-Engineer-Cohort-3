@@ -11,7 +11,7 @@ Note: this assignment is a written/design exercise (no dataset, code, or noteboo
 
 ## Structure
 
-For each of the 13 questions: a full usable prompt, an explanation of the structural design choices, the prompting technique used (zero-shot / few-shot / Chain-of-Thought / Tree-of-Thought / hybrid) and why, the failure modes it prevents, and at least one alternative prompt design.
+For each of the 13 questions: a full usable prompt, an explanation of the structural design choices, the prompting technique used (zero-shot / few-shot / Chain-of-Thought — the three techniques covered in the training session) and why, the failure modes it prevents, and at least one alternative prompt design.
 
 ## Key takeaways
 
